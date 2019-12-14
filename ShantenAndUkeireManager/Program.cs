@@ -9,6 +9,8 @@ namespace ShantenAndUkeireManager
         {
             try
             {
+                Console.Title = "Shanten and Ukeire Finder";
+
                 Console.WriteLine("This program should find the shanten of a hand and the ukeire tiles.");
                 Console.WriteLine("The input should be in the following format: 22m13468p3s11225z");
 
@@ -18,7 +20,7 @@ namespace ShantenAndUkeireManager
                 {
                     if (tiles.Count == 0)
                     {
-                        Console.WriteLine("Awaiting Input...");
+                        Console.WriteLine("Awaiting Input...\n");
                         tiles = MyConverter.StringToTileConverter(Console.ReadLine().Trim().ToLowerInvariant());
                     }
 
@@ -45,10 +47,12 @@ namespace ShantenAndUkeireManager
                     }
 
                     Console.WriteLine("\nPress y to continue.");
+
                     if (Console.ReadLine().Trim().ToLowerInvariant() != "y")
                         break;
 
                     Console.WriteLine("Please enter the tile you want to discard. Any invalid entry will be treated as a random tile.");
+
                     string newDiscardTile = Console.ReadLine();
 
                     if (Tile.TryParse(newDiscardTile))
@@ -90,13 +94,10 @@ namespace ShantenAndUkeireManager
             var discardOptimizerManager = new DiscardOptimizerManager(tiles);
             discardOptimizerManager.MakeCalculations();
 
-            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("\nThe shanten is:" + discardOptimizerManager.Shanten);
-            Console.ResetColor();
 
             List<Tile> discardedTiles = new List<Tile>();
 
-            Console.ForegroundColor = ConsoleColor.Yellow;
             foreach (var discardInfo in discardOptimizerManager.DiscardsInfo)
             {
                 if (discardedTiles.Contains(discardInfo.DiscardedTile))
@@ -106,7 +107,6 @@ namespace ShantenAndUkeireManager
                 Console.WriteLine("The ukeire tiles (" + discardInfo.TotalUkeireTiles.ToString() + ") are: ");
                 Console.WriteLine(MyConverter.ConvertTilesToTenhouFormat(discardInfo.Ukeire));
             }
-            Console.ResetColor();
         }
     }
 }

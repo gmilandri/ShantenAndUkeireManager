@@ -54,7 +54,7 @@ namespace ShantenAndUkeireManager
             {
                 int answer = 13;
 
-                for (int i = kokushiHand.remainingTiles.Count -1; i >= 0; i--)
+                for (int i = kokushiHand.remainingTiles.Count - 1; i >= 0; i--)
                 {
                     if (!kokushiHand.remainingTiles[i].IsKokushiRelated)
                     {
@@ -78,7 +78,14 @@ namespace ShantenAndUkeireManager
                 return answer;
             }
             else
-                return maxShanten;
+            {
+                for (int tile = 0; tile < kokushiHand.remainingTiles.Count; tile++)
+                {
+                    kokushiHand.isolatedTiles.Add(kokushiHand.remainingTiles[tile]);
+                }
+                kokushiHand.remainingTiles.Clear();
+                return int.MaxValue;
+            }
         }
 
         public bool IsThereAnyPair()
@@ -116,7 +123,7 @@ namespace ShantenAndUkeireManager
 
                 for (int tile = 0; tile < remainingTiles.Count - 1; tile++)
                 {
-                    if (remainingTiles[tile] == remainingTiles[tile +1] && !pairTiles.Contains(remainingTiles[tile]))
+                    if (remainingTiles[tile] == remainingTiles[tile + 1] && !pairTiles.Contains(remainingTiles[tile]))
                     {
                         tile++;
                         numberOfPairs++;
@@ -131,7 +138,14 @@ namespace ShantenAndUkeireManager
                 return 6 - numberOfPairs;
             }
             else
-                return maxShanten;
+            {
+                for (int tile = 0; tile < allPairsHand.remainingTiles.Count; tile++)
+                {
+                    allPairsHand.isolatedTiles.Add(allPairsHand.remainingTiles[tile]);
+                }
+                allPairsHand.remainingTiles.Clear();
+                return int.MaxValue;
+            }
         }
 
         public void ElaborateHand (out List<HandInfo> newPossibleHands, out int tempShanten)

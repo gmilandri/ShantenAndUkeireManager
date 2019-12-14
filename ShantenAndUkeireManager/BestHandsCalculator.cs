@@ -29,8 +29,10 @@ namespace ShantenAndUkeireManager
 
             HandInfo allPairsHand;
             int shantenPairs = _startingHand.DetermineAllPairsShanten(out allPairsHand);
+
             HandInfo kokushiHand;
             int shantenKokushi = _startingHand.DetermineKokushiShanten(out kokushiHand);
+
             if (shantenPairs <= _bestShanten)
             {
                 _bestShanten = shantenPairs;
@@ -45,6 +47,25 @@ namespace ShantenAndUkeireManager
             if (shantenKokushi == _bestShanten)
             {
                 _bestHands.Add(kokushiHand);
+            }
+
+            if (_startingHand.remainingTiles.Count != 14)
+            {
+                switch (_startingHand.remainingTiles.Count)
+                {
+                    case 11:
+                        _startingHand.numberOfMelds = 1;
+                        break;
+                    case 8:
+                        _startingHand.numberOfMelds = 2;
+                        break;
+                    case 5:
+                        _startingHand.numberOfMelds = 3;
+                        break;
+                    case 2:
+                        _startingHand.numberOfMelds = 4;
+                        break;
+                }
             }
 
             shantenCounterQueue.Enqueue(_startingHand);
