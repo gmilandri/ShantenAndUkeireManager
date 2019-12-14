@@ -7,16 +7,8 @@ namespace ShantenAndUkeireManager
 {
     public static class MyConverter
     {
-        public static List<Tile> FileContentConverter(string filePath)
+        public static List<Tile> StringToTileConverter(string tiles)
         {
-            if (!File.Exists(filePath))
-                throw new FileNotFoundException("The file indicated does not exist in the desktop as of now. Please create a txt file named hand.", filePath);
-
-            string tiles = File.ReadAllText(filePath).Trim();
-
-            if (String.IsNullOrWhiteSpace(tiles))
-                throw new Exception("The specified file is empty.");
-
             var answer = new List<Tile>();
 
             string[] hand;

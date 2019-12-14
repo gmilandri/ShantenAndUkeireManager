@@ -9,23 +9,16 @@ namespace ShantenAndUkeireManager
     {
         static void Main(string[] args)
         {
-            string inputFilePath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\Mahjongtests\input.txt";
-            string outputFilePath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\Mahjongtests\output.txt";
-
-            StringBuilder log = new StringBuilder();
             Console.WriteLine("This program should find the shanten of a hand and the ukeire tiles.");
-            Console.WriteLine("The content of the file should be in the following format: 22m13468p3s11225z");
-            Console.WriteLine("I'm looking into the file: " + inputFilePath);
+            Console.WriteLine("The input should be in the following format: 22m13468p3s11225z");
+            Console.WriteLine("Awaiting Input...");
 
-            var tiles = MyConverter.FileContentConverter(inputFilePath);
-
-            log.Append(MyConverter.ConvertTilesToTenhouFormat(tiles));
+            var tiles = MyConverter.StringToTileConverter(Console.ReadLine());
 
             var discardOptimizerManager = new DiscardOptimizerManager(tiles);
             discardOptimizerManager.MakeCalculations();
 
-            log.Append("\n\nThe shanten is:" + discardOptimizerManager.Shanten);
-            log.Append("\n");
+            Console.WriteLine("\nThe shanten is:" + discardOptimizerManager.Shanten);
 
             List<Tile> discardedTiles = new List<Tile>();
 
@@ -34,12 +27,10 @@ namespace ShantenAndUkeireManager
                 if (discardedTiles.Contains(discardInfo.DiscardedTile))
                     continue;
                 discardedTiles.Add(discardInfo.DiscardedTile);
-                log.Append("\nBy discarding " + discardInfo.DiscardedTile.Rank.ToString() + discardInfo.DiscardedTile.Suit.ToString().ToLower());
-                log.Append("\nThe ukeire tiles (" + discardInfo.TotalUkeireTiles.ToString() + ") are: ");
-                log.Append(MyConverter.ConvertTilesToTenhouFormat(discardInfo.Ukeire));
-                log.Append("\n");
+                Console.WriteLine("\nBy discarding " + discardInfo.DiscardedTile.Rank.ToString() + discardInfo.DiscardedTile.Suit.ToString().ToLower());
+                Console.WriteLine("The ukeire tiles (" + discardInfo.TotalUkeireTiles.ToString() + ") are: ");
+                Console.WriteLine(MyConverter.ConvertTilesToTenhouFormat(discardInfo.Ukeire));
             }
-            File.WriteAllText(outputFilePath, log.ToString(), Encoding.UTF8);
         }
     }
 }
