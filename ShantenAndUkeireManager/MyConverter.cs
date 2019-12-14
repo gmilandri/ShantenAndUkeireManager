@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 
 namespace ShantenAndUkeireManager
@@ -48,18 +47,6 @@ namespace ShantenAndUkeireManager
 
                 for (int i = 0; i < hand[0].Length; i++)
                     answer.Add(new Tile(hand[0][i], Suit.Z)); ;
-            }
-
-            switch (answer.Count)
-            {
-                case 2:
-                case 5:
-                case 8:
-                case 11:
-                case 14:
-                    break;
-                default:
-                    throw new Exception("There must be 2, 5, 8, 11 or 14 tiles.");
             }
 
             answer.Sort();

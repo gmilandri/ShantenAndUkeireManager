@@ -200,6 +200,52 @@ namespace ShantenAndUkeireManager
             return tempHand;
         }
 
+        public static HandValidity IsHandValid(List<Tile> tiles)
+        {
+            switch (tiles.Count)
+            {
+                case 2:
+                case 5:
+                case 8:
+                case 11:
+                case 14:
+                    return HandValidity.Valid;
+                case 1:
+                case 4:
+                case 7:
+                case 10:
+                case 13:
+                    return HandValidity.MissingTile;
+                default:
+                    return HandValidity.Error;
+            }
+        }
+
+        public static bool TryParse (string tile)
+        {
+            if (string.IsNullOrWhiteSpace(tile))
+                return false;
+            if (tile.Length != 2)
+                return false;
+            if (!char.IsDigit(tile[0]))
+                return false;
+            if (!char.IsLetter(tile[1]))
+                return false;
+            if (tile[1] == 'm' || tile[1] == 'p' || tile[1] == 's')
+            {
+                var number = Convert.ToInt32(tile[0] - '0');
+                if (number > 0 && number < 10)
+                    return true;
+            }
+            else if (tile[1] == 'z')
+            {
+                var number = Convert.ToInt32(tile[0] - '0');
+                if (number > 0 && number < 8)
+                    return true;
+            }
+            return false;
+        }
+
         public readonly static Tile[] KokushiTiles = new Tile[]
 {
             new Tile(Suit.M, 1),
@@ -226,4 +272,12 @@ namespace ShantenAndUkeireManager
         S = 2,
         Z = 3
     }
+
+    public enum HandValidity
+    {
+        Error = 0,
+        MissingTile = 1,
+        Valid = 2
+    }
+
 }
