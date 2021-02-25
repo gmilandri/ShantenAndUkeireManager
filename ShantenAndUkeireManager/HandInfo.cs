@@ -10,6 +10,7 @@ namespace ShantenAndUkeireManager
         public int numberOfMelds = 0;
         public List<Tile[]> unfinishedMelds;
         public List<Tile> isolatedTiles;
+        public List<Tile> impossibleTilesToDraw;
         public bool hasPair;
 
         public int previousShanten;
@@ -27,10 +28,22 @@ namespace ShantenAndUkeireManager
             remainingTiles = new List<Tile>(tiles);
             unfinishedMelds = new List<Tile[]>();
             isolatedTiles = new List<Tile>();
-            numberOfMelds = (13 - tiles.Count) / 3; ;
+            impossibleTilesToDraw = new List<Tile>();
+            numberOfMelds = (13 - tiles.Count) / 3;
+
+            if (remainingTiles.Count >= 4)
+            {
+                for (var i = 0; i < remainingTiles.Count - 3; i++)
+                {
+                    if (remainingTiles[i] == remainingTiles[i + 1] && remainingTiles[i] == remainingTiles[i + 2] && remainingTiles[i] == remainingTiles[i + 3])
+                    {
+                        impossibleTilesToDraw.Add(remainingTiles[i]);
+                    }
+                }
+            }
         }
 
-        public HandInfo(List<Tile> precedentTiles, int precedentNumberOfMelds, List<Tile[]> precedentUnfinishedMelds, List<Tile> precedentIsolatedTiles, bool precedentHasPair, int precedentShanten, int maxShanten)
+        public HandInfo(List<Tile> precedentTiles, int precedentNumberOfMelds, List<Tile[]> precedentUnfinishedMelds, List<Tile> precedentIsolatedTiles, bool precedentHasPair, int precedentShanten, int maxShanten, List<Tile> precedentImpossibleTilesToDraw)
         {
             remainingTiles = new List<Tile>(precedentTiles);
             numberOfMelds = precedentNumberOfMelds;
@@ -39,6 +52,7 @@ namespace ShantenAndUkeireManager
             hasPair = precedentHasPair;
             previousShanten = precedentShanten;
             this.maxShanten = maxShanten;
+            impossibleTilesToDraw = new List<Tile>(precedentImpossibleTilesToDraw);
             DetermineShanten();
         }
 
@@ -50,6 +64,7 @@ namespace ShantenAndUkeireManager
         public int DetermineKokushiShanten(out HandInfo kokushiHand)
         {
             kokushiHand = new HandInfo(remainingTiles);
+            kokushiHand.kokushi = true;
             if (kokushiHand.remainingTiles.Count >= 13)
             {
                 int answer = 13;
@@ -63,7 +78,7 @@ namespace ShantenAndUkeireManager
                     }
                 }
 
-                if (kokushiHand.IsThereAnyPair())
+                if (kokushiHand.IsThereAnyKokushiPair())
                 {
                     kokushiHand.hasPair = true;
                     answer--;
@@ -102,6 +117,20 @@ namespace ShantenAndUkeireManager
             return answer;
         }
 
+        public bool IsThereAnyKokushiPair()
+        {
+            var answer = false;
+            for (var i = 0; i < remainingTiles.Count - 1; i++)
+            {
+                if (remainingTiles[i] == remainingTiles[i + 1] && remainingTiles[i].IsKokushiRelated)
+                {
+                    answer = true;
+                    break;
+                }
+            }
+            return answer;
+        }
+
         public static List<Tile> RemoveAllDoubles (List<Tile> oldTiles) => oldTiles.Distinct().ToList();
 
         public int DetermineStandardShanten()
@@ -116,36 +145,31 @@ namespace ShantenAndUkeireManager
         public int DetermineAllPairsShanten(out HandInfo allPairsHand)
         {
             allPairsHand = new HandInfo(remainingTiles);
-            if (remainingTiles.Count >= 13)
-            {
-                int numberOfPairs = 0;
-                List<Tile> pairTiles = new List<Tile>();
+            int numberOfPairs = 0;
+            List<Tile> pairTiles = new List<Tile>();
 
-                for (int tile = 0; tile < remainingTiles.Count - 1; tile++)
-                {
-                    if (remainingTiles[tile] == remainingTiles[tile + 1] && !pairTiles.Contains(remainingTiles[tile]))
-                    {
-                        tile++;
-                        numberOfPairs++;
-                        pairTiles.Add(remainingTiles[tile]);
-                    }
-                    else if (!pairTiles.Contains(remainingTiles[tile]))
-                        allPairsHand.isolatedTiles.Add(remainingTiles[tile]);
-                }
-
-                allPairsHand.allPairs = true;
-                allPairsHand.shanten = 6 - numberOfPairs;
-                return 6 - numberOfPairs;
-            }
-            else
+            for (int tile = 0; tile < remainingTiles.Count; tile++)
             {
-                for (int tile = 0; tile < allPairsHand.remainingTiles.Count; tile++)
+                if (tile == remainingTiles.Count - 1 && !pairTiles.Contains(remainingTiles[tile]))
                 {
-                    allPairsHand.isolatedTiles.Add(allPairsHand.remainingTiles[tile]);
+                    allPairsHand.isolatedTiles.Add(remainingTiles[tile]);
+                    break;
                 }
-                allPairsHand.remainingTiles.Clear();
-                return int.MaxValue;
+                else if (tile == remainingTiles.Count - 1 && pairTiles.Contains(remainingTiles[tile]))
+                    break;
+                if (remainingTiles[tile] == remainingTiles[tile + 1] && !pairTiles.Contains(remainingTiles[tile]))
+                {
+                    tile++;
+                    numberOfPairs++;
+                    pairTiles.Add(remainingTiles[tile]);
+                }
+                else if (!pairTiles.Contains(remainingTiles[tile]))
+                    allPairsHand.isolatedTiles.Add(remainingTiles[tile]);
             }
+
+            allPairsHand.allPairs = true;
+            allPairsHand.shanten = 6 - numberOfPairs;
+            return 6 - numberOfPairs;
         }
 
         public void ElaborateHand (out List<HandInfo> newPossibleHands, out int tempShanten)
@@ -215,10 +239,11 @@ namespace ShantenAndUkeireManager
         {
             if (remainingTiles[1] == tile && remainingTiles[2] == tile)
             {
-                List<Tile> newTiles = new List<Tile>();
-                for (int i = 3; i < remainingTiles.Count; i++)
-                    newTiles.Add(remainingTiles[i]);
-                newPossibleHand = new HandInfo(newTiles, numberOfMelds + 1, unfinishedMelds, isolatedTiles, hasPair, shanten, maxShanten);
+                List<Tile> newTiles = new List<Tile>(remainingTiles);
+                newTiles.Remove(tile);
+                newTiles.Remove(tile);
+                newTiles.Remove(tile);
+                newPossibleHand = new HandInfo(newTiles, numberOfMelds + 1, unfinishedMelds, isolatedTiles, hasPair, shanten, maxShanten, impossibleTilesToDraw);
             }
             else
                 newPossibleHand = null;
@@ -232,7 +257,7 @@ namespace ShantenAndUkeireManager
                 newTiles.Remove(tile);
                 newTiles.Remove(tile.Next());
                 newTiles.Remove(tile.Next().Next());
-                newPossibleHand = new HandInfo(newTiles, numberOfMelds + 1, unfinishedMelds, isolatedTiles, hasPair, shanten, maxShanten);
+                newPossibleHand = new HandInfo(newTiles, numberOfMelds + 1, unfinishedMelds, isolatedTiles, hasPair, shanten, maxShanten, impossibleTilesToDraw);
             }
             else
                 newPossibleHand = null;
@@ -247,7 +272,7 @@ namespace ShantenAndUkeireManager
                 List<Tile> newTiles = new List<Tile>(remainingTiles);
                 newTiles.RemoveAt(indexTwo);
                 newTiles.RemoveAt(indexOne);
-                newPossibleHand = new HandInfo(newTiles, numberOfMelds, unfinishedMelds, isolatedTiles, true, shanten, maxShanten);
+                newPossibleHand = new HandInfo(newTiles, numberOfMelds, unfinishedMelds, isolatedTiles, true, shanten, maxShanten, impossibleTilesToDraw);
             }
             else
                 newPossibleHand = null;
@@ -255,7 +280,7 @@ namespace ShantenAndUkeireManager
 
         public void CheckUnfinishedPon (Tile tile, out HandInfo newPossibleHand)
         {
-            if (remainingTiles.IndexOf(tile) != remainingTiles.LastIndexOf(tile))
+            if (remainingTiles.IndexOf(tile) != remainingTiles.LastIndexOf(tile) && !impossibleTilesToDraw.Contains(tile))
             {
                 int indexOne = remainingTiles.IndexOf(tile);
                 int indexTwo = remainingTiles.LastIndexOf(tile);
@@ -264,7 +289,7 @@ namespace ShantenAndUkeireManager
                 newUnfinishedMelds.Add(new Tile[] { remainingTiles[indexOne], remainingTiles[indexTwo] });
                 newTiles.RemoveAt(indexTwo);
                 newTiles.RemoveAt(indexOne);
-                newPossibleHand = new HandInfo(newTiles, numberOfMelds, newUnfinishedMelds, isolatedTiles, hasPair, shanten, maxShanten);
+                newPossibleHand = new HandInfo(newTiles, numberOfMelds, newUnfinishedMelds, isolatedTiles, hasPair, shanten, maxShanten, impossibleTilesToDraw);
             }
             else
                 newPossibleHand = null;
@@ -272,14 +297,14 @@ namespace ShantenAndUkeireManager
 
         public void CheckUnfinishedChiOne(Tile tile, out HandInfo newPossibleHand)
         {
-            if (remainingTiles.Contains(tile.Next()))
+            if (remainingTiles.Contains(tile.Next()) && !impossibleTilesToDraw.Contains(tile))
             {
                 List<Tile> newTiles = new List<Tile>(remainingTiles);
                 List<Tile[]> newUnfinishedMelds = new List<Tile[]>(unfinishedMelds);
                 newUnfinishedMelds.Add(new Tile[] { tile, tile.Next() });
                 newTiles.Remove(tile);
                 newTiles.Remove(tile.Next());
-                newPossibleHand = new HandInfo(newTiles, numberOfMelds, newUnfinishedMelds, isolatedTiles, hasPair, shanten, maxShanten);
+                newPossibleHand = new HandInfo(newTiles, numberOfMelds, newUnfinishedMelds, isolatedTiles, hasPair, shanten, maxShanten, impossibleTilesToDraw);
             }
             else
                 newPossibleHand = null;
@@ -287,7 +312,7 @@ namespace ShantenAndUkeireManager
 
         public void CheckUnfinishedChiTwo(Tile tile, out HandInfo newPossibleHand)
         {
-            if (remainingTiles.Contains(tile.Next().Next()))
+            if (remainingTiles.Contains(tile.Next().Next()) && !impossibleTilesToDraw.Contains(tile))
             {
                 List<Tile> newTiles = new List<Tile>(remainingTiles);
                 List<Tile[]> newUnfinishedMelds = new List<Tile[]>(unfinishedMelds)
@@ -296,7 +321,7 @@ namespace ShantenAndUkeireManager
                 };
                 newTiles.Remove(tile);
                 newTiles.Remove(tile.Next().Next());
-                newPossibleHand = new HandInfo(newTiles, numberOfMelds, newUnfinishedMelds, isolatedTiles, hasPair, shanten, maxShanten);
+                newPossibleHand = new HandInfo(newTiles, numberOfMelds, newUnfinishedMelds, isolatedTiles, hasPair, shanten, maxShanten, impossibleTilesToDraw);
             }
             else
                 newPossibleHand = null;
@@ -308,7 +333,7 @@ namespace ShantenAndUkeireManager
             newTiles.Remove(tile);
             List<Tile> newIsolatedTiles = new List<Tile>(isolatedTiles);
             newIsolatedTiles.Add(tile);
-            newPossibleHand = new HandInfo(newTiles, numberOfMelds, unfinishedMelds, newIsolatedTiles, hasPair, shanten, maxShanten);
+            newPossibleHand = new HandInfo(newTiles, numberOfMelds, unfinishedMelds, newIsolatedTiles, hasPair, shanten, maxShanten, impossibleTilesToDraw);
         }
 
 

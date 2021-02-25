@@ -70,7 +70,10 @@ namespace ShantenAndUkeireManager
                     else if (!hand.hasPair)
                     {
                         foreach (var tile in hand.isolatedTiles)
-                            ukeire.Add(tile);
+                        {
+                            if (!hand.impossibleTilesToDraw.Contains(tile))
+                                ukeire.Add(tile);
+                        }
                     }
                 }
                 else if (hand.kokushi)

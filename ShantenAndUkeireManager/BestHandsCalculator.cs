@@ -27,11 +27,15 @@ namespace ShantenAndUkeireManager
         {
             Queue shantenCounterQueue = new Queue();
 
-            HandInfo allPairsHand;
-            int shantenPairs = _startingHand.DetermineAllPairsShanten(out allPairsHand);
+            HandInfo allPairsHand = null;
+            int shantenPairs = 100;
+            if (_startingHand.remainingTiles.Count >= 13)
+                shantenPairs = _startingHand.DetermineAllPairsShanten(out allPairsHand);
 
-            HandInfo kokushiHand;
-            int shantenKokushi = _startingHand.DetermineKokushiShanten(out kokushiHand);
+            HandInfo kokushiHand = null;
+            int shantenKokushi = 100;
+            if (_startingHand.remainingTiles.Count >= 13)
+                shantenKokushi = _startingHand.DetermineKokushiShanten(out kokushiHand);
 
             if (shantenPairs <= _bestShanten)
             {
@@ -74,7 +78,7 @@ namespace ShantenAndUkeireManager
             {
                 var currentHand = (HandInfo)shantenCounterQueue.Dequeue();
 
-                if (_bestHands.Count > 0 && currentHand.isolatedTiles.Count > _bestHands[_bestHands.Count - 1].isolatedTiles.Count)
+                if (_bestHands.Count > 0 && currentHand.isolatedTiles.Count > _bestHands[_bestHands.Count - 1].isolatedTiles.Count + 1) //NOT SURE ABOUT THIS ONE.?
                 {
                     continue;
                 }

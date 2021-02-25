@@ -38,6 +38,12 @@ namespace ShantenAndUkeireManager
             }
 
             DiscardsInfo = DiscardsInfo.OrderByDescending(discardInfo => discardInfo.TotalUkeireTiles).ToList();
+
+            for (int i = DiscardsInfo.Count - 1; i >= 0; i--)
+            {
+                if (DiscardsInfo[i].TotalUkeireTiles == 0)
+                    DiscardsInfo.RemoveAt(i);
+            }
         }
     }
 }
